@@ -50,13 +50,11 @@ class _HomePageState extends State<HomePage>
       vsync: this,
     );
 
+    // Animation is no longer used for position but controller is needed for timing
     _animation = Tween<Offset>(
-      begin: const Offset(1.0, -0.7), // Start near Internet icon
-      end: const Offset(-1.0, -0.7), // End near Folder icon
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    ));
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(_controller);
 
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -99,6 +97,7 @@ class _HomePageState extends State<HomePage>
       _isAttacking = true;
       _attackSuccessful = false; // Reset previous result
     });
+    // We still use the controller to time the attack duration
     _controller.forward(from: 0.0);
   }
 
@@ -110,6 +109,15 @@ class _HomePageState extends State<HomePage>
       _attackSuccessful = false;
       _controller.reset();
     });
+  }
+
+  void _showFolderDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const _FolderDialog();
+      },
+    );
   }
 
 
@@ -146,13 +154,14 @@ class _HomePageState extends State<HomePage>
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            const Positioned(
+                            Positioned(
                               top: 10,
                               left: 10,
                               child: _IconWithLabel(
                                 icon: Icons.folder_open,
-                                label: 'Folder',
+                                label: 'Folder A',
                                 isInternetIcon: false,
+                                onTap: _showFolderDialog, // Make the folder icon tappable
                               ),
                             ),
                             const Positioned(
@@ -164,15 +173,6 @@ class _HomePageState extends State<HomePage>
                                 isInternetIcon: true,
                               ),
                             ),
-                             if (_isAttacking)
-                              SlideTransition(
-                                position: _animation,
-                                child: const Icon(
-                                  Icons.bug_report,
-                                  color: Colors.red,
-                                  size: 30,
-                                ),
-                              ),
                             Positioned(
                               bottom: 0,
                               left: 0,
@@ -180,7 +180,7 @@ class _HomePageState extends State<HomePage>
                               child: Container(
                                 padding: const EdgeInsets.all(8.0),
                                 decoration: const BoxDecoration(
-                                  color: Color(0xFF2D2D2D), // Corrected to dark panel color
+                                  color: Color(0xFF2D2D2D),
                                   border: Border(
                                     top: BorderSide(color: glowColor, width: 2.0),
                                   ),
@@ -193,6 +193,15 @@ class _HomePageState extends State<HomePage>
                                 ),
                               ),
                             ),
+                             if (_isAttacking)
+                              // MODIFICATION: Replaced SlideTransition with a static Center widget
+                              const Center(
+                                child: Icon(
+                                  Icons.bug_report,
+                                  color: Colors.red,
+                                  size: 50, // Made icon larger to be more noticeable
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -306,7 +315,8 @@ class _HomePageState extends State<HomePage>
             ],
           ),
         ),
-      );
+      
+    );
   }
 }
 
@@ -358,36 +368,121 @@ class _DefenceCheckboxOption extends StatelessWidget {
 
 // A helper widget for icons with labels
 class _IconWithLabel extends StatelessWidget {
-  const _IconWithLabel({required this.icon, required this.label, this.isInternetIcon = false});
+  const _IconWithLabel({
+    required this.icon,
+    required this.label,
+    this.isInternetIcon = false,
+    this.onTap,
+  });
 
   final IconData icon;
   final String label;
   final bool isInternetIcon;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     const glowColor = Color(0xFF00BFFF);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-           decoration: BoxDecoration(
-             border: Border.all(color: glowColor, width: 2),
-             // Make internet icon circular, folder icon square
-             shape: isInternetIcon ? BoxShape.circle : BoxShape.rectangle,
-             boxShadow: [
-              BoxShadow(
-                color: glowColor.withAlpha(128), // Updated for deprecation
-                blurRadius: 5,
-              )
-             ]
-           ),
-          child: Icon(icon, color: glowColor, size: 40)),
-        const SizedBox(height: 4),
-        Text(label, style: const TextStyle(color: glowColor)),
-      ],
+    return InkWell(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+             decoration: BoxDecoration(
+               border: Border.all(color: glowColor, width: 2),
+               // Make internet icon circular, folder icon square
+               shape: isInternetIcon ? BoxShape.circle : BoxShape.rectangle,
+               boxShadow: [
+                BoxShadow(
+                  color: glowColor.withAlpha(128), // Updated for deprecation
+                  blurRadius: 5,
+                )
+               ]
+             ),
+            child: Icon(icon, color: glowColor, size: 40)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: glowColor)),
+        ],
+      ),
     );
   }
 }
+
+// New widget for the folder explorer dialog
+class _FolderDialog extends StatelessWidget {
+  const _FolderDialog();
+
+  @override
+  Widget build(BuildContext context) {
+    // Dummy data for the file list
+    final files = [
+      {'name': 'xyz.docx', 'date': '9/12/2025 7:18 PM', 'type': 'Microsoft Word D...', 'size': '15 KB'},
+      {'name': 'xyz.png', 'date': '9/12/2025 7:18 PM', 'type': 'PNG File', 'size': '102 KB'},
+      {'name': 'xyz.pptx', 'date': '9/12/2025 7:18 PM', 'type': 'Microsoft PowerP...', 'size': '2 MB'},
+      {'name': 'xyz.txt', 'date': '9/12/2025 7:18 PM', 'type': 'Text Document', 'size': '1 KB'},
+      {'name': 'xyz.xlsx', 'date': '9/12/2025 7:18 PM', 'type': 'Microsoft Excel W...', 'size': '24 KB'},
+    ];
+
+    return AlertDialog(
+      backgroundColor: Colors.transparent,
+      contentPadding: EdgeInsets.zero,
+      content: Container(
+        width: MediaQuery.of(context).size.width * 0.6, // 60% of screen width
+        height: MediaQuery.of(context).size.height * 0.6, // 60% of screen height
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          border: Border.all(color: const Color(0xFF00BFFF), width: 2),
+        ),
+        child: Column(
+          children: [
+            // Title Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+              color: const Color(0xFF1E1E1E),
+              child: Row(
+                children: [
+                  const Icon(Icons.folder, size: 16),
+                  const SizedBox(width: 8),
+                  const Text('New Folder'),
+                  const Spacer(),
+                  InkWell(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: const Icon(Icons.close, size: 16),
+                  ),
+                ],
+              ),
+            ),
+            // File List
+            Expanded(
+              child: SingleChildScrollView(
+                child: DataTable(
+                  columnSpacing: 20,
+                  dataTextStyle: const TextStyle(color: Colors.white, fontSize: 12),
+                  headingTextStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  columns: const [
+                    DataColumn(label: Text('Name')),
+                    DataColumn(label: Text('Date modified')),
+                    DataColumn(label: Text('Type')),
+                    DataColumn(label: Text('Size')),
+                  ],
+                  rows: files.map((file) => DataRow(
+                    cells: [
+                      DataCell(Text(file['name']!)),
+                      DataCell(Text(file['date']!)),
+                      DataCell(Text(file['type']!)),
+                      DataCell(Text(file['size']!)),
+                    ],
+                  )).toList(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
