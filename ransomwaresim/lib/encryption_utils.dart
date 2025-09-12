@@ -1,14 +1,20 @@
-import 'dart:convert';
+import 'package:encrypt/encrypt.dart' as encrypt;
 
 class EncryptionUtils {
-  static String encrypt(String text) {
-    // Simple base64 encoding for simulation
-    return base64Encode(utf8.encode(text));
+  static final _key = encrypt.Key.fromUtf8('my32lengthsupersecretnooneknows1'); // 32 chars
+  static final _iv = encrypt.IV.fromLength(16);
+
+  static String encryptText(String text) {
+    final encrypter = encrypt.Encrypter(encrypt.AES(_key));
+    final encrypted = encrypter.encrypt(text, iv: _iv);
+    return encrypted.base64;
   }
 
-  static String decrypt(String encryptedText) {
+  static String decryptText(String encryptedText) {
     try {
-      return utf8.decode(base64Decode(encryptedText));
+      final encrypter = encrypt.Encrypter(encrypt.AES(_key));
+      final decrypted = encrypter.decrypt64(encryptedText, iv: _iv);
+      return decrypted;
     } catch (e) {
       return 'Invalid encrypted text';
     }

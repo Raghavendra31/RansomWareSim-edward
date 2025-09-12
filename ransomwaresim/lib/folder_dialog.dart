@@ -72,7 +72,7 @@ class _FolderDialogState extends State<FolderDialog> {
 
     // Show encrypted or decrypted content
     final displayContent = isEncrypted
-        ? EncryptionUtils.encrypt(originalContent)
+        ? EncryptionUtils.encryptText(originalContent)
         : originalContent;
 
     showDialog(
