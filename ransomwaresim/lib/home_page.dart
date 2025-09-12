@@ -4,6 +4,7 @@ import 'defence_checkbox_option.dart';
 import 'icon_with_label.dart';
 import 'folder_dialog.dart';
 import 'internet_dialog.dart';
+import 'encryption_utils.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
