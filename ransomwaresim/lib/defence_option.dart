@@ -1,0 +1,1 @@
+enum DefenceOption { encryption, backup, fraudLink }
