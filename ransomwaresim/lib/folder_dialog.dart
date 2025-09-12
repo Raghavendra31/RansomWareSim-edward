@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'encryption_utils.dart'; // <-- Add this import
 
 class FolderDialog extends StatefulWidget {
   final List<Map<String, dynamic>> files;
@@ -15,6 +16,15 @@ class FolderDialog extends StatefulWidget {
 }
 
 class _FolderDialogState extends State<FolderDialog> {
+  // Dummy file contents for simulation
+  final Map<String, String> _dummyContents = {
+    'xyz.docx': 'This is a Word document.',
+    'xyz.png': 'PNG image binary data.',
+    'xyz.pptx': 'PowerPoint presentation slides.',
+    'xyz.txt': 'This is a plain text file.',
+    'xyz.xlsx': 'Excel spreadsheet data.',
+  };
+
   void _showContextMenu(BuildContext context, LongPressStartDetails details, int index) {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject()! as RenderBox;
     final bool isEncrypted = widget.files[index]['isEncrypted'] as bool;
@@ -51,6 +61,38 @@ class _FolderDialogState extends State<FolderDialog> {
         ),
       ],
       color: const Color(0xFF2D2D2D),
+    );
+  }
+
+  void _showFileContentDialog(BuildContext context, int index) {
+    final file = widget.files[index];
+    final fileName = file['name'] as String;
+    final isEncrypted = file['isEncrypted'] as bool;
+    final originalContent = _dummyContents[fileName] ?? 'No content available.';
+
+    // Show encrypted or decrypted content
+    final displayContent = isEncrypted
+        ? EncryptionUtils.encrypt(originalContent)
+        : originalContent;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D2D),
+        title: Text(fileName),
+        content: SingleChildScrollView(
+          child: Text(
+            displayContent,
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -105,6 +147,7 @@ class _FolderDialogState extends State<FolderDialog> {
                   final file = widget.files[index];
                   return GestureDetector(
                     onLongPressStart: (details) => _showContextMenu(context, details, index),
+                    onTap: () => _showFileContentDialog(context, index), // <-- Add this line
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                       decoration: BoxDecoration(
