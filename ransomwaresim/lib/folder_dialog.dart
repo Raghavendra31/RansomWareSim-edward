@@ -129,7 +129,7 @@ class _FolderDialogState extends State<FolderDialog> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
               decoration: BoxDecoration(
-                border: Border(bottom: BorderSide(color: Colors.grey.withOpacity(0.5))),
+                border: Border(bottom: BorderSide(color: Colors.grey.withValues())),
               ),
               child: const Row(
                 children: [
@@ -151,7 +151,7 @@ class _FolderDialogState extends State<FolderDialog> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                       decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey.withOpacity(0.3))),
+                        border: Border(bottom: BorderSide(color: Colors.grey.withValues())),
                       ),
                       child: Row(
                         children: [
